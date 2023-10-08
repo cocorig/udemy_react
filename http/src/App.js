@@ -18,23 +18,23 @@ function App() {
   //     releaseDate: '2021-05-19',
   //   },
   // ];
-  function fetchMoviesHandler(){
+  // then-> async , await (단순 코드 변환, 똑깉은 작업, 앞에서 미리 선언, 가독성)
+async function fetchMoviesHandler(){
 
-    fetch('https://swapi.dev/api/films/')
-    .then((response) => response.json()) // response(json형태).json()=> js객체 형태로 변환.
-    .then((data)=> {  
-      // js객체로 전달된 데이터를 반환하기 전에 props로 넘겨줄 키 이름을 바꿔줌
-      const transformMovies =  data.results.map((items)=> {
-      return { // 한 줄 한줄 객체를 리턴함
-        id : items.episode_id,
-        title : items.title,
-        openingText: items.opening_crawl,
-        releaseDate: items.release_date,
+  const response = await fetch('https://swapi.dev/api/films/');
+  const data = await response.json();
+  // js객체로 전달된 데이터를 반환하기 전에 props로 넘겨줄 키 이름을 바꿔줌
+  const transformMovies =  data.results.map((items)=> {
+  return { // 한 줄 한줄 객체를 리턴함
+    id : items.episode_id,
+    title : items.title,
+    openingText: items.opening_crawl,
+    releaseDate: items.release_date,
       };
     })
     setMovie(transformMovies) // 새로운 data 배열
   }
-)}
+
   return (
     <React.Fragment>
       <section>
