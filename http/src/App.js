@@ -1,4 +1,5 @@
-import React, {useState , useEffect} from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, {useState , useEffect, useCallback} from 'react';
 import MoviesList from './components/MoviesList';
 import './App.css';
 
@@ -8,12 +9,18 @@ function App() {
   const [isLoading , setIsLoading] = useState(false);
   const [error , setError] = useState(null);
   // 
-async function fetchMoviesHandler(){
+
+ // useCallback으로 함수를 상수로 선언할 때 주의해야 할 점!!
+  // useCallback으로 상수에 넣기 전에는 함수였기 때문에 호이스팅이 되어서 useEffect가 이 선언문보다 위에 있을 수 있었지만
+  // 상수로 변경된 뒤로는 함수의 호이스팅이 적용되지 않으므로 해당 함수를 사용하기 전에 선언해야 한다는 것
+  // -> 이제 fetchMoviesHandler가 불필요하게 재생성되는 걸 막음
+const fetchMoviesHandler = useCallback(async() =>{
+  setIsLoading(true); 
+  setError(null)
   try{
-    setIsLoading(true); // 가져오기 기다리는 중.. 로딩 중~
-    setError(null)
+
     const response = await fetch('https://swapi.dev/api/films/');
-    //body 부분을 파싱하기 전에 response의 응답이 ok인지 확안
+    
     if(!response.ok){
       throw new Error('오류 발생')
     }
@@ -28,14 +35,16 @@ async function fetchMoviesHandler(){
       })
       setMovie(transformMovies) 
   
-    } catch(error){ // 위 코드에 error 캐치
-      // fetch API는 에러 상태 코드를 실제 에러로 취급x, 실제ㅡ에러를 받아도 실제 에러로 취급하지 않는다. -> 직접 만들자
+    } catch(error){
       setError(error.message)
     }
-    // error나면 로딩할 필요 x //로딩 중 아님~ 다 가져옴
-    setIsLoading(false); // 로딩 끝
-  }
 
+    setIsLoading(false); // 로딩 끝
+  } ,[])
+
+  useEffect(()=>{
+    fetchMoviesHandler()
+  },[fetchMoviesHandler]); // 컴포넌트가 재 렌더링될 때마다 함수가 바뀜, 무한 루프에 빠짐 -> 해결책 (useCallback)
 
   let content = <strong>Found no movies.</strong>
 
@@ -55,13 +64,6 @@ async function fetchMoviesHandler(){
         <button onClick={fetchMoviesHandler}>Fetch Movies</button>
       </section>
       <section>
-        {/* 로딩 중이 아닐 때(isLoading이 false일 때, ! not연산자로 true가 되니까 뒤에 컴포넌트가 렌더링) MoviesList가 보여지게 하자 , 다 가져오면 렌더링 되게 */}
-        {/* 받아온 데이터가 1개라도 있을 때 */}
-        {/* {!isLoading && movie.length > 0 &&  <MoviesList movies={movie}/>}
-        {/* 가져왔는데 영화가 없다면, 에러발생 했을 땐 숨기기 */}
-        {/* {!error && !isLoading && movie.length === 0 && <strong>Found no movies.</strong>}
-        {!isLoading && error && <strong>{error}</strong>}
-        {isLoading && <strong>Loading...</strong>} */}
           {content}
       </section>
       
